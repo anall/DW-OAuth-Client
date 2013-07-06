@@ -28,7 +28,7 @@ sub oauth_args {
     if ( @_ ) {
         $self->{_oauth_args} = shift;
     }
-    return $self->{_oauth_args} // {};
+    return $self->{_oauth_args};
 }
 
 sub send_receive {
@@ -50,8 +50,6 @@ sub send_receive {
     # Initialize the basic about the HTTP Request object
     my $http_request = $self->http_request()->clone();
 
-
-    # $self->http_request(HTTP::Request->new);
     $http_request->headers( HTTP::Headers->new );
 
     # TODO - add application/dime
@@ -175,21 +173,24 @@ sub send_receive {
 
             # !!! Modifications START
             my $oargs = $self->oauth_args;
-            my %args = (
-                consumer_key        => $oargs->{consumer_key},
-                consumer_secret     => $oargs->{consumer_secret},
-                token               => $oargs->{token},
-                token_secret        => $oargs->{token_secret},
-                request_url         => $http_request->uri,
-                request_method      => uc( $http_request->method ),
-                signature_method    => 'HMAC-SHA1',
-                timestamp           => time,
-                nonce               => random_string('.' x 20),
-                body_hash           => sha1_base64( $http_request->content ) . '=',
-            );
-            my $oa_request = SigningTransport::ProtectedResourceRequest->new(%args);
-            $oa_request->sign;
-            $http_request->header("Authorization", $oa_request->to_authorization_header);
+            if ( $oargs ) {
+                my %args = (
+                    consumer_key        => $oargs->{consumer_key},
+                    consumer_secret     => $oargs->{consumer_secret},
+                    token               => $oargs->{token},
+                    token_secret        => $oargs->{token_secret},
+                    request_url         => $http_request->uri,
+                    request_method      => uc( $http_request->method ),
+                    signature_method    => 'HMAC-SHA1',
+                    timestamp           => time,
+                    nonce               => random_string('.' x 20),
+                    body_hash           => sha1_base64( $http_request->content ) . '=',
+                );
+                my $oa_request = SigningTransport::ProtectedResourceRequest->new(%args);
+                $oa_request->sign;
+                $http_request->header("Authorization", $oa_request->to_authorization_header);
+            }
+            print $http_request->as_string;
             # !!! Modifications END            
 
             # send and receive the stuff.

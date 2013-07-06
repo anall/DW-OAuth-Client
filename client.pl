@@ -46,16 +46,22 @@ printf "Hello userid %d with fullname %s\n",$res->{userid},$res->{fullname};
 $res = run_request( 'LJ.XMLRPC.getevents', {
     auth_method => 'oauth',
     selecttype  => 'lastn',
-    howmany     => 1 } );
-printf("The subject of your most recent entry ( posted on %s ) was %s [ at %s ]\n",
-    $res->{events}->[0]->{eventtime}, 
-    $res->{events}->[0]->{subject}, 
-    $res->{events}->[0]->{url} );
+    howmany     => 20,
+    ver => 1 } );
+my $ct = scalar @{ $res->{events} };
+printf("The subject of your most recent %i %s\n", $ct, $ct == 1 ? "entry" : "entries" );
+printf("    %s\n      %s ( posted on %s )\n",
+        $_->{subject} || "(no subject)", 
+        $_->{url},
+        $_->{eventtime}, 
+    ) foreach @{ $res->{events} };
 
 sub run_request {
     my $rv = $xmlrpc->call( @_ );
     if ( $rv->fault ) {
-        die $rv->fault->{faultString};
+        print STDERR "Fail: " . $rv->fault->{faultString} . "\n";
+        print STDERR Dumper($rv->fault);
+        exit(-2);
     }
     return $rv->result;
 }
