@@ -40,4 +40,6 @@ $request->sign;
 my $res = $ua->request(GET $request->to_url);
 if ($res->is_success) {
     print Dumper( JSON::decode_json $res->content );
+} else {
+    print "ERROR!";
 }
