@@ -98,7 +98,7 @@ sub authorize {
         authorize_handle_verifier( $response, $verifier );
     } else {
         print STDERR "Failed to authorize: " . $res->code . "\n";
-        print STDERR $res->content;
+        print STDERR $res->content . "\n";
         exit(-1);
     }
 }
@@ -131,8 +131,8 @@ sub authorize_handle_verifier {
         YAML::Any::DumpFile("access.yml",$access_info);
         print "Authorized!\n\n";
     } else {
-        print STDERR "Failed to authorize: " . $res->code . "\n";
-        print STDERR $res->content;
+        print STDERR "Failed to authorize (access token): " . $res->code . "\n";
+        print STDERR $res->content . "\n";
         exit(-1);
     }
 }
